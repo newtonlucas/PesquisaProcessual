@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Resultados</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  </head>
+  <body>
+    <div class="container">
+      <h1>Resultados da Consulta</h1>
+      <h2>Processos Encontrados</h2>
+      {{ results_table|safe }}
+      <h2>Processos Inconclusivos</h2>
+      {{ inconclusivos_table|safe }}
+      <h2>Processos com Erros</h2>
+      {{ errors_table|safe }}
+      <a href="{{ url_for('download_excel') }}" class="btn btn-success">Download em Excel</a>
+      <a href="{{ url_for('download_txt') }}" class="btn btn-primary">Download em TXT</a>
+    </div>
+  </body>
+</html>
