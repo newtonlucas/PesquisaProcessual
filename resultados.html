@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resultados da Pesquisa</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='CSS/pp.css') }}">
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <a href="index.html" class="btn btn-primary">Nova Pesquisa</a>
+            <div>
+                <button id="download-excel" class="btn btn-success" disabled>Download Excel</button>
+                <button id="download-txt" class="btn btn-info" disabled>Download TXT</button>
+            </div>
+        </div>
+
+        <!-- Seção de Progresso -->
+        <div id="progress-section" class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Progresso da Pesquisa</h5>
+                <p id="progress-status">Iniciando...</p>
+                <div class="progress">
+                    <div id="progress-bar" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Seção de Resultados -->
+        <div id="results-section" style="display: none;">
+            <h3>Resultados Encontrados</h3>
+            <div class="table-responsive">
+                <table class="table table-striped" id="tabela-resultados">
+                    <thead>
+                        <tr>
+                            <th>Número do Processo</th>
+                            <th>Foro/Vara ou Órgão Julgador</th>
+                            <th>Juiz/Relator</th>
+                            <th>Classe</th>
+                            <th>Assunto</th>
+                            <th>Situação</th>
+                            <th>Partes e Advogados</th>
+                            <th>Valor</th>
+                            <th>Data</th>
+                            <th>Movimento</th>
+                        </tr>
+                    </thead>
+                    <tbody id="resultados-body"></tbody>
+                </table>
+            </div>
+
+            <h3 class="mt-5">Erros ou Processos Não Encontrados</h3>
+            <div class="table-responsive">
+                <table class="table table-striped" id="tabela-erros">
+                    <thead>
+                        <tr>
+                            <th>Número do processo</th>
+                            <th>Informação</th>
+                        </tr>
+                    </thead>
+                    <tbody id="erros-body"></tbody>
+                </table>
+            </div>
+
+            <h3 class="mt-5">Inconclusivos</h3>
+            <div class="table-responsive">
+                <table class="table table-striped" id="tabela-inconclusivos">
+                    <thead>
+                        <tr>
+                            <th>Número do processo</th>
+                            <th>Observações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="inconclusivos-body"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'https://pesquisa-c4hmaugwe4dfbjgw.brazilsouth-01.azurewebsites.net';
+
+        const progressBar = document.getElementById('progress-bar');
+        const progressStatus = document.getElementById('progress-status');
+        const progressSection = document.getElementById('progress-section');
+        const resultsSection = document.getElementById('results-section');
+        
+        const btnExcel = document.getElementById('download-excel');
+        const btnTxt = document.getElementById('download-txt');
+
+        // Pega o task_id da URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const taskId = urlParams.get('task_id');
+
+        if (!taskId) {
+            progressStatus.textContent = 'Erro: ID da tarefa não encontrado na URL.';
+        } else {
+            // Inicia a verificação de status
+            const pollingInterval = setInterval(pollStatus, 3000);
+
+            async function pollStatus() {
+                try {
+                    const response = await fetch(`${API_URL}/api/status/${taskId}`);
+                    if (!response.ok) {
+                        throw new Error(`API respondeu com status: ${response.status}`);
+                    }
+                    const data = await response.json();
+
+                    if (data.status === 'processando' || data.status === 'iniciando') {
+                        const progress = data.progress || { current: 0, total: 1 };
+                        const percentage = Math.round((progress.current / progress.total) * 100);
+                        progressStatus.textContent = `Processando... (${progress.current} de ${progress.total} processos analisados)`;
+                        progressBar.style.width = `${percentage}%`;
+                        progressBar.setAttribute('aria-valuenow', percentage);
+
+                    } else if (data.status === 'concluido') {
+                        clearInterval(pollingInterval);
+                        progressSection.style.display = 'none';
+                        resultsSection.style.display = 'block';
+                        renderTables(data);
+                        activateDownloadButtons(taskId);
+                    } else if (data.status === 'nao_encontrado') {
+                        clearInterval(pollingInterval);
+                        progressStatus.textContent = 'Erro: Tarefa não encontrada no servidor.';
+                    } else {
+                        clearInterval(pollingInterval);
+                        progressStatus.textContent = `Tarefa finalizada com status inesperado: ${data.status}`;
+                    }
+                } catch (error) {
+                    clearInterval(pollingInterval);
+                    console.error('Erro ao consultar status:', error);
+                    progressStatus.textContent = 'Erro de comunicação com a API. Verifique o console.';
+                }
+            }
+        }
+
+        function renderTables(data) {
+            const resultadosBody = document.getElementById('resultados-body');
+            const errosBody = document.getElementById('erros-body');
+            const inconclusivosBody = document.getElementById('inconclusivos-body');
+
+            // Limpa tabelas antigas
+            resultadosBody.innerHTML = '';
+            errosBody.innerHTML = '';
+            inconclusivosBody.innerHTML = '';
+
+            // Popula tabela de resultados
+            if (data.resultados && data.resultados.length > 0) {
+                data.resultados.forEach(item => {
+                    const row = `<tr>
+                        <td>${item['Número do Processo'] || ''}</td>
+                        <td>${item['Foro e Vara / Órgão Julgador'] || ''}</td>
+                        <td>${item['Juiz / Relator'] || ''}</td>
+                        <td>${item['Classe'] || ''}</td>
+                        <td>${item['Assunto'] || ''}</td>
+                        <td>${item['Situação'] || ''}</td>
+                        <td>${item['Partes e Advogados'] || ''}</td>
+                        <td>${item['Valor'] || ''}</td>
+                        <td>${item['Data'] || ''}</td>
+                        <td>${item['Movimento'] || ''}</td>
+                    </tr>`;
+                    resultadosBody.innerHTML += row;
+                });
+            } else {
+                resultadosBody.innerHTML = '<tr><td colspan="10">Nenhum resultado encontrado.</td></tr>';
+            }
+
+            // Popula tabela de erros
+            if (data.erros && data.erros.length > 0) {
+                data.erros.forEach(item => {
+                    const row = `<tr>
+                        <td>${item['Número do processo'] || ''}</td>
+                        <td>${item['Informação'] || ''}</td>
+                    </tr>`;
+                    errosBody.innerHTML += row;
+                });
+            } else {
+                errosBody.innerHTML = '<tr><td colspan="2">Nenhum erro reportado.</td></tr>';
+            }
+
+            // Popula tabela de inconclusivos
+            if (data.inconclusivos && data.inconclusivos.length > 0) {
+                data.inconclusivos.forEach(item => {
+                    const row = `<tr>
+                        <td>${item['Número do processo'] || ''}</td>
+                        <td>${item['Observações'] || ''}</td>
+                    </tr>`;
+                    inconclusivosBody.innerHTML += row;
+                });
+            } else {
+                inconclusivosBody.innerHTML = '<tr><td colspan="2">Nenhum processo inconclusivo.</td></tr>';
+            }
+        }
+
+        function activateDownloadButtons(taskId) {
+            btnExcel.disabled = false;
+            btnTxt.disabled = false;
+            btnExcel.addEventListener('click', () => { window.location.href = `${API_URL}/api/download_excel/${taskId}`; });
+            btnTxt.addEventListener('click', () => { window.location.href = `${API_URL}/api/download_txt/${taskId}`; });
+        }
+
+    </script>
+</body>
+</html>

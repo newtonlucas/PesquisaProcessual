@@ -1,0 +1,128 @@
+html, body, div, span, applet, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+a, abbr, acronym, address, big, cite, code,
+del, dfn, em, img, ins, kbd, q, s, samp,
+small, strike, strong, sub, sup, tt, var,
+b, u, i, center,
+dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td,
+article, aside, canvas, details, embed, 
+figure, figcaption, footer, header, hgroup, 
+menu, nav, output, ruby, section, summary,
+time, mark, audio, video {
+	margin: 0;
+	padding: 0;
+	border: 0;
+	font-size: 100%;
+	vertical-align: baseline;
+}
+/* HTML5 display-role reset for older browsers */
+article, aside, details, figcaption, figure, 
+footer, header, hgroup, menu, nav, h1, h2 {
+	display: block;
+}
+ol, ul {
+	list-style: none;
+}
+a{
+    cursor: pointer;
+    text-decoration: none;
+    color: #000;
+}
+blockquote, q {
+	quotes: none;
+}
+blockquote:before, blockquote:after,
+q:before, q:after {
+	content: '';
+	content: none;
+}
+table {
+	border-collapse: collapse;
+	border-spacing: 0;
+}
+a, a:hover{
+    text-decoration:none;
+    cursor:pointer;
+}
+p{
+    font: 500 16px 'Roboto', sans-serif;
+    line-height: 28px;
+    color: #7f7f7f;
+}
+h1, h2, h3{
+    font: 500 'Poppins', sans-serif;
+}
+h1{
+    color:#212D3A;
+}
+h2, h3{
+    color: #435873;
+}
+h1{
+    font-size: 44px;
+}
+h2{
+    font-size: 33px;
+}
+h3{
+    font-size: 22px;
+}
+
+.form-group{
+    margin-bottom: 1.5rem;
+    display: flex;
+}
+.link-com-icone{
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: adobe-caslon-pro, sans-serif;
+    font-size: 18px;
+    color: #060633;
+    font-weight: 400;
+}
+.link-com-icone .icone{
+    width: 28px;
+    height: 28px;
+    object-fit: contain;
+    display: inline-block;
+}
+/* opcional: hover */
+.link-com-icone:hover { opacity: 0.9; }
+.seta{
+    padding: 10px;
+    line-height: 1;
+    position: fixed;
+    top: 90%;
+}
+/* 1. Estilo para a coluna de índice (<th> no tbody) */
+.table tbody th, .table thead th {
+    min-width: 25px;
+    padding: .3rem;
+    text-align: left;
+}
+/* 2. Estilo para as células de dados e cabeçalho (exceto o índice) */
+.table td, .table th {
+    white-space: nowrap;
+    min-width: 180px; /* Largura mínima para evitar compressão */
+    padding: .3rem;
+    text-align: left;
+}
+
+/* 3. Regra para quebrar linha nas colunas de texto longo (sobrescreve a anterior) */
+#tabela-resultados td:nth-child(3),
+#tabela-resultados td:nth-child(6),
+#tabela-resultados td:nth-child(8),
+#tabela-resultados td:nth-child(11),
+#tabela-erros td:nth-child(2),
+#tabela-inconclusivos td:nth-child(2) {
+    white-space: normal;
+    overflow-wrap: break-word;
+    min-width: 350px; /* Garante que a coluna de texto longo também não seja comprimida */
+}
+/* Alinha o texto do cabeçalho da tabela à esquerda */
+.table thead th {
+    text-align: left;
+}
