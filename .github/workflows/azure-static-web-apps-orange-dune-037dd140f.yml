@@ -46,3 +46,4 @@ jobs:
         with:
           action: "close"
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_ORANGE_DUNE_037DD140F }}
+          app_location: "/" # App source code path (required)
