@@ -1,0 +1,12 @@
+Flask
+requests
+pandas
+beautifulsoup4
+selenium
+webdriver-manager
+lxml
+openpyxl
+gunicorn
+Flask-Cors
+msal
+python-dotenv
