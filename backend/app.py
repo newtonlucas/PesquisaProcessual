@@ -31,14 +31,16 @@ load_dotenv()
 import auth
 
 app = Flask(__name__)
+app.config['SESSION_COOKIE_SAMESITE'] = 'None'
+app.config['SESSION_COOKIE_SECURE'] = True
 # A chave secreta é carregada a partir do arquivo .env para manter a sessão estável.
 app.secret_key = os.getenv("FLASK_SECRET_KEY")
 
 # A URL do frontend é carregada da variável de ambiente para flexibilidade.
 FRONTEND_URL = os.getenv("FRONTEND_URL")
 if FRONTEND_URL:
-    CORS(app, resources={r"/api/*": {"origins": FRONTEND_URL}}, supports_credentials=True)
-
+    CORS(app, origins=[FRONTEND_URL], supports_credentials=True)
+    
 # --- Armazenamento de Tarefas em Memória ---
 tasks = {}
 
