@@ -40,7 +40,7 @@ app.secret_key = os.getenv("FLASK_SECRET_KEY")
 FRONTEND_URL = os.getenv("FRONTEND_URL")
 if FRONTEND_URL:
     CORS(app, origins=[FRONTEND_URL], supports_credentials=True)
-    
+
 # --- Armazenamento de Tarefas em Memória ---
 tasks = {}
 
@@ -71,9 +71,9 @@ def logout():
     """Faz o logout do usuário limpando a sessão."""
     session.clear()
     # Redireciona para a URL de logout da Microsoft e depois volta para a home do app
+    logout_redirect_uri = f"{FRONTEND_URL}/index.html"
     return redirect(
-        auth.AUTHORITY + "/oauth2/v2.0/logout?" +
-        "post_logout_redirect_uri=" + url_for("index", _external=True))
+        auth.AUTHORITY + "/oauth2/v2.0/logout?" + f"post_logout_redirect_uri={logout_redirect_uri}")
 
 @app.route("/")
 def index():
@@ -188,7 +188,6 @@ def download_txt_api(task_id):
     if not task or task['status'] != 'concluido' or task.get('user_id') != session["user"]["oid"]:
         return "Tarefa não encontrada ou não concluída.", 404
 
-    # O resto da função continua igual...
     output = io.StringIO()
     output.write(f'Resultado dos processos recebidos:\n\n')
     
@@ -216,10 +215,7 @@ def download_txt_api(task_id):
     output.seek(0)
     return send_file(io.BytesIO(output.getvalue().encode()), mimetype='text/plain', as_attachment=True, download_name=f'Resultados_{data_e_hora_em_texto}.txt')
 
-
-# --- Lógica de Raspagem (O conteúdo desta função permanece o mesmo) ---
 def extrai_dados_e_atualiza_tarefa(task_id, lista_consulta):
-    # ... (Todo o seu código de scraping original vai aqui, sem alterações)
     # Listas locais para esta tarefa específica
     lista_resultados = []
     lista_erros = []
